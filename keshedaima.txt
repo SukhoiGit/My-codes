@@ -1,0 +1,242 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#include<stdlib.h>
+
+int num1, num2;  //num1,num2 分别表示多项式1，2的项数
+typedef struct dataNode {
+	float coef;//系数
+	int expn;//指数
+	struct dataNode* next;
+}Node;
+
+void CreatePolynomial(Node*p1,Node*p2) //此函数用于创建多项式
+{
+	Node* h1 = p1; Node* h2 = p2;
+	printf("请输入第一个多项式中所含项的数目： ");
+	scanf("%d", &num1);
+	printf("请按照指数从小到大的顺序依次输入每一项的系数:\n");
+	for (int i = 1; i <= num1; i++)
+	{
+		Node* data1 = (Node*)malloc(sizeof(Node));
+		scanf("%f", &data1->coef);
+		data1->next = NULL;
+		p1->next = data1;
+		p1 = data1;
+	}
+	p1 = h1->next;
+	printf("请按从小到大的次序依次输入各项的指数:\n");
+	for (int i = 1; i <= num1; i++)
+	{
+		scanf("%d", &p1->expn);
+		p1 = p1->next;
+	}
+	//p1 = h1->next;
+	printf("输入成功，请输入第二个多项式中所含项的数目： ");
+	scanf("%d", &num2);
+	printf("请按照指数从小到大的顺序依次输入每一项的系数: \n");
+	for (int i = 1; i <= num2; i++)
+	{
+		Node* data2 = (Node*)malloc(sizeof(Node));
+		scanf("%f", &data2->coef);
+		data2->next = NULL;
+		p2->next = data2;
+		p2 = data2;
+	}
+	p2 = h2->next;
+	printf("请按从小到大的次序依次输入各项的指数:\n");
+	for (int i = 1; i <= num2; i++)
+	{
+		scanf("%d", &p2->expn);
+		p2=p2->next;
+	}	
+	printf("\n");
+}
+
+void display(Node*p1,Node*p2) //此函数用于输出多项式1，2的内容
+{
+	p1 = p1->next;
+	p2 = p2->next;
+	printf("你输入的多项式1为： ");
+	for(int i=1;i<=num1;i++)
+	{
+		printf("%.2fx^%d", p1->coef, p1->expn);
+		if (p1->next != NULL)
+			printf("+");
+		p1=p1->next;
+	}
+	printf("\n");
+	printf("你输入的多项式2为： ");
+	for(int i=1;i<=num2;i++)
+	{
+		printf("%.2fx^%d", p2->coef, p2->expn);
+		if (p2->next != NULL)
+			printf("+");
+		p2=p2->next;
+	}
+	printf("\n");
+}
+
+void addPolynomial(Node* La, Node* Lb)
+{
+	if (!La->next)
+	{
+		printf("你还没有输入多项式，请先按功能1输入多项式");
+		return ;
+	}
+	int x, len; //len为Lc表的长度
+	float y;
+	Node* Lc; Node* pa; Node* pb; Node* pc; Node* u;//pa,pb,pc为工作指针
+	Lc = La;
+	len = 0;
+	pc = Lc;
+	pa = La -> next;
+	pb = Lb -> next;
+	//通过pa,pb遍历链表La，Lb。只有当两指针同时存在才执行以下循环。
+	while (pa && pb)
+	{
+		x = pa->expn - pb->expn;
+		//判断pa所指结点的指数与pb所指结点指数的大小关系
+		if (x < 0)
+		{
+			//如果小，则把qa结点放到Lc上
+			pc = pa;
+			len++;
+			pa = pa->next;
+		}
+		//如果相等，则判断两结点的系数和是否为0
+		else if (x == 0)
+		{
+			y = pa->coef + pb->coef;
+			if (y != 0.0)
+			{
+				//如果y不为0，修改pa结点的系数值，同时链接到Lc上
+				pa->coef = y;
+				pc = pa;
+				len++;
+			}
+			//如果y值为0，则从pc的链表中摘除该结点，并释放该节点
+			else
+			{
+				pc->next = pa->next;
+				free(pa);
+			}
+			//无论是否为0，都执行以下操作
+			pa = pc -> next;
+			u = pb;
+			pb = pb->next;
+			free(u);
+		}
+		else
+		{
+			u = pb->next;
+			pb->next = pa;
+			pc->next = pb;
+			pc = pb;
+			len++;
+			pb = u;
+		}
+	}
+	//由于是在La上进行一元多项式的加和，所以如果运行过程pa不再有结点，而pb上有，则需要将pb剩余的结点链接到Lc上
+	if (pb)
+	{
+		pc->next = pb;
+	}
+	//计算Lc的长度
+	while (pc)
+	{
+		pc = pc->next;
+		if(pc)
+		{
+			len++;
+		}
+	}
+	//Lc的头结点中记录Lc链表的长度
+	Lc->coef = len;
+	//加和完成的同时，释放Lb结点
+	//free(Lb);
+	printf("相加成功 ! 请按功能3查看结果");
+}
+
+void displayResult(Node* Lc) //
+{
+	if (!Lc->next)
+	{
+		printf("你还没有输入多项式,请先按功能1输入多项式");
+			return ;
+	}
+	if (Lc->coef == 0)
+	{
+		printf("你还没有把两式相加,请先按功能2将两式相加");
+		return;
+	}
+	printf("两多项式之和为： ");
+	Lc = Lc->next;
+	while(Lc)
+	{
+		printf("%.2fx^%d", Lc->coef, Lc->expn);
+		if (Lc->next)
+		{
+			printf("+");
+		}
+		Lc = Lc->next;
+	}
+}
+
+void dataReset(Node*La) //此函数用于重置链表
+{
+	Node* clear;
+	La->coef = 0;
+	La->expn = -1;
+	La = La->next;
+	while (La)
+	{
+		clear = La;
+		La = La->next;
+		free(clear);
+	}
+	printf("重置成功，现在可以重新输入了");
+}
+
+int main()
+{
+	Node* p1 = (Node*)malloc(sizeof(Node));
+	p1->next = NULL; p1->coef = 0; p1->expn = -1;
+	Node* p2 = (Node*)malloc(sizeof(Node));
+	p2->next = NULL; p2->coef = 0; p2->expn = -1;
+	int choice;
+	do
+	{
+		//显示菜单
+		printf("\n");
+		printf("\n------Menu:---------\n");
+		printf("1.Input polynomial\n");
+		printf("2.Add polynomial\n");
+		printf("3.display the added_result\n");
+		printf("4.reset\n");
+		printf("5.clear the screen\n");
+		printf("6.Exit\n");
+		printf("--------------------\n");
+		printf("Enter your choice: ");
+		scanf("%d", &choice);
+
+		switch (choice)
+		{
+		case 1: CreatePolynomial(p1, p2); display(p1, p2);
+			break;
+		case 2: addPolynomial(p1, p2);
+			break;
+		case 3: displayResult(p1);
+			break;
+		case 4: dataReset(p1);
+			break;
+		case 5: system("cls");
+			break;
+		case 6: printf("Exiting the program \n");
+			break;
+		default: printf("Invalid input.Please enter agin\n");
+		}
+	} while (choice != 0);
+
+}
+	
+
